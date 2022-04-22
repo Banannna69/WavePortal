@@ -9,13 +9,15 @@ async function main () {
   console.log("Account Balance:", accountBalance.toString() / 10 ** 18)
 
   const WaveContractFactory = await hre.ethers.getContractFactory("WavePortal")
+  //部署合约时向合约发送 0.1 ether
   const waveContract = await WaveContractFactory.deploy({ value: hre.ethers.utils.parseEther("0.1") })
   await waveContract.deployed()
 
-  contractBalance = await hre.ethers.provider.getBalance(waveContract.address)
-  console.log("Contract balance:", hre.ethers.utils.formatEther(contractBalance))
   console.log("WaveContract deployed to:", waveContract.address)
   console.log("WaveContract deployed by:", deployer.address)
+  let contractBalance = await hre.ethers.provider.getBalance(waveContract.address)
+  console.log("WaveContract Balance:", contractBalance / 10 ** 18)
+
   console.log("-----------------------------------------------------------------------")
 }
 

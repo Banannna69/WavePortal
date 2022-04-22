@@ -1,76 +1,80 @@
-import { Contract, ethers } from "ethers"
-import './App.css'
-import contractABI from "./contractAbi.json"
 import React, { useEffect, useState } from "react"
+import "./App.css"
+import checkIfWalletIsConnected from './checkIf'
+import connectWallet from './ConnectWallet'
+import "./GetAllWaves"
+import wave from './Wave'
+import getAllWaves from "./GetAllWaves"
 
 
 
-const App = () => {
+
+
+function App () {
+  //Just a state variable we use to store our user's public wallet.
   const [currentAccount, setCurrentAccount] = useState("")
-  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+  const [allWaves, setAllWaves] = useState([])
+  const [message, setMessage] = useState("")
+
+  useEffect(() => {
+    checkIfWalletIsConnected(currentAccount, setCurrentAccount)
+  }, [])
 
 
-  const wave = async () => {
-    try {
-      const { ethereum } = window
-      if (ethereum) {
-        //ether 是一个帮助前端与合约交互的库
-        //provider 与以太坊节点交互
-        const provider = new ethers.providers.Web3Provider(ethereum)
-        const signer = provider.getSigner()
-        const wavePortalContract = new ethers.Contract(contractAddress, contractABI.abi, signer)
 
 
-        let count = await wavePortalContract.getTotalWaves()
-        console.log("Rereieved total wave count...", count.toNumber())
-
-        const waveTxn = await wavePortalContract.wave()
-        console.log("Minging...", waveTxn.hash)
-
-        await waveTxn.wait()
-        console.log("Mined --", waveTxn.hash)
-
-        count = await wavePortalContract.getTotalWaves()
-        console.log("Retrieved total wave count...", count.toNumber())
-
-      } else {
-        console.log("Ethereum object doesn't exist!")
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-
-  class Wave extends React.Component {
-    render () {
-      return (
-        <div className="PositionMiddle">
-          <button className="waveButton" onClick={wave}>
-            Wave at Me
-          </button>
-        </div>
-      )
-    }
-  }
 
   return (
-    <div className="mainContainer">
-
-      <div className="dataContainer">
-        <div className="header">
-          👋 Hey there!
-        </div>
-        <div className="bio" >
-          That's pretty cool right? Connect your Ethereum wallet and wave at me!
-        </div>
-        <button className="waveButton" onClick={wave}>
-          Wave at Me
-        </button>
-        <Wave />
+    <>
+      <div>
       </div>
-    </div>
+      <div className="mainContainer">
+        <div className="dataContainer">
+          <div className="header">
+            👋 Wave there!
+          </div>
+
+          <div className="bio">
+            That's pretty cool right? Connect your Ethereum wallet and wave at me!
+          </div>
+
+
+
+          {/* //连接钱包 */}
+          {!currentAccount && (
+            <button className="waveButton" onClick={() => connectWallet(currentAccount, setCurrentAccount)}>
+              Connect Wallet
+            </button>) || (<button className="waveButton" onClick={null}>Connected</button>)}
+
+          {/* //输入 message */}
+          {currentAccount ?
+            (<textarea name="message box" className="waveButton"
+              placeholder="Send me message~~~" type="text" id="_message" value={message}
+              onChange={e => setMessage(e.target.value)}>
+            </textarea>) : null}
+
+          <button className="waveButton" id="wave" onClick={() => wave(currentAccount, setCurrentAccount, message)}>
+            Send wave
+          </button>
+          {/* 遍历显示waves */}
+          <button className="waveButton" onClick={() => getAllWaves(currentAccount, setCurrentAccount, allWaves, setAllWaves)}>
+            GetAllWaves
+          </button>
+
+          {allWaves.map((wave, index) => {
+            return (
+              <div key={index} style={{ backgroundColor: "oldlace", marginTop: "16px", padding: "16px" }}>
+                <div>Address: {wave.address}</div>
+                <div>Time: {wave.timestamp.toString()}</div>
+                <div>Message: {wave.message}</div>
+              </div>)
+          })}
+
+
+
+        </div>
+      </div>
+    </>
   )
 }
-
 export default App
